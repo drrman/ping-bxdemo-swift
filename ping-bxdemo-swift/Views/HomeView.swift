@@ -3,6 +3,8 @@ import SwiftUI
 struct HomeView: View {
     private let config = CustomerConfig.current
     @State private var selectedTab = 0
+    @State private var showStepUp = false
+    @State private var stepUpSucceeded = false
 
     private var firstName: String {
         guard let claims = AuthService.shared.getUserFromToken() else { return "" }
@@ -79,7 +81,11 @@ struct HomeView: View {
                 // Content tiles
                 VStack(spacing: 12) {
                     ForEach(Array(config.contentTiles.enumerated()), id: \.offset) { _, tile in
-                        ContentTileCard(tile: tile)
+                        ContentTileCard(tile: tile) {
+                            if tile.icon == "lock.shield.fill" {
+                                showStepUp = true
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -99,41 +105,57 @@ struct HomeView: View {
                 }
             }
         }
+        .sheet(isPresented: $showStepUp) {
+            StepUpView {
+                stepUpSucceeded = true
+            }
+        }
+        .alert("Coming Soon", isPresented: $stepUpSucceeded) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Travel Documents will be available in a future update.")
+        }
     }
 }
 
 private struct ContentTileCard: View {
     let tile: ContentTile
+    var onTap: (() -> Void)? = nil
     private let config = CustomerConfig.current
 
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: tile.icon)
-                .font(.title2)
-                .foregroundColor(config.secondaryColor)
-                .frame(width: 44, height: 44)
-                .background(config.primaryColor.opacity(0.1))
-                .cornerRadius(10)
+        Button {
+            onTap?()
+        } label: {
+            HStack(spacing: 16) {
+                Image(systemName: tile.icon)
+                    .font(.title2)
+                    .foregroundColor(config.secondaryColor)
+                    .frame(width: 44, height: 44)
+                    .background(config.primaryColor.opacity(0.1))
+                    .cornerRadius(10)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(tile.title)
-                    .font(.headline)
-                    .foregroundColor(config.primaryColor)
-                Text(tile.subtitle)
-                    .font(.subheadline)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(tile.title)
+                        .font(.headline)
+                        .foregroundColor(config.primaryColor)
+                    Text(tile.subtitle)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
             }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            .padding()
+            .background(Color(.secondarySystemBackground))
+            .cornerRadius(12)
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+        .buttonStyle(.plain)
     }
 }
 

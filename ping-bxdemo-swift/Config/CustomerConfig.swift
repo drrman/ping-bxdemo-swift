@@ -20,6 +20,8 @@ struct CustomerConfig {
     let vertical: String
     let customerSlug: String
     let contentTiles: [ContentTile]
+    let stepUpTitle: String
+    let stepUpSubtitle: String
 
     static let current = CustomerConfig(
         appName: "Southwest Airlines",
@@ -38,6 +40,9 @@ struct CustomerConfig {
             ContentTile(icon: "airplane", title: "My Trips", subtitle: "View and manage your upcoming flights"),
             ContentTile(icon: "star.fill", title: "Rapid Rewards", subtitle: "You have 24,500 points — redeem for your next trip"),
             ContentTile(icon: "tag.fill", title: "Flight Deals", subtitle: "Exclusive member offers available now"),
-        ]
+            ContentTile(icon: "lock.shield.fill", title: "Travel Documents", subtitle: "Passport and secure ID management"),
+        ],
+        stepUpTitle: "Verify Your Identity",
+        stepUpSubtitle: "Additional verification is required to access this feature"
     )
 }

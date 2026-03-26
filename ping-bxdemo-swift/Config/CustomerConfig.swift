@@ -1,5 +1,11 @@
 import SwiftUI
 
+struct ContentTile {
+    let icon: String
+    let title: String
+    let subtitle: String
+}
+
 struct CustomerConfig {
     let appName: String
     let tagline: String
@@ -13,6 +19,7 @@ struct CustomerConfig {
     let bannerAssetName: String
     let vertical: String
     let customerSlug: String
+    let contentTiles: [ContentTile]
 
     static let current = CustomerConfig(
         appName: "Southwest Airlines",
@@ -26,6 +33,11 @@ struct CustomerConfig {
         logoAssetName: "logo",
         bannerAssetName: "banner",
         vertical: "airlines",
-        customerSlug: "southwest-airlines"
+        customerSlug: "southwest-airlines",
+        contentTiles: [
+            ContentTile(icon: "airplane", title: "My Trips", subtitle: "View and manage your upcoming flights"),
+            ContentTile(icon: "star.fill", title: "Rapid Rewards", subtitle: "You have 24,500 points — redeem for your next trip"),
+            ContentTile(icon: "tag.fill", title: "Flight Deals", subtitle: "Exclusive member offers available now"),
+        ]
     )
 }

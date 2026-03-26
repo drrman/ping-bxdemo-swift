@@ -11,9 +11,21 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemBackground))
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink(destination: ProfileView()) {
+                    Image(systemName: "person.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(config.primaryColor)
+                }
+            }
+        }
     }
 }
 
 #Preview {
-    HomeView()
+    NavigationStack {
+        HomeView()
+            .environmentObject(AuthService.shared)
+    }
 }

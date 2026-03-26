@@ -8,7 +8,6 @@ class LoginViewModel: ObservableObject {
     @Published var currentNode: Node?
     @Published var isLoading = true
     @Published var errorMessage: String?
-    @Published var isAuthenticated = false
 
     private let daVinci: DaVinci
     private let authService: AuthService
@@ -51,12 +50,11 @@ class LoginViewModel: ObservableObject {
                         idToken: token.idToken,
                         refreshToken: token.refreshToken
                     )
-                    self.isAuthenticated = true
                 case .failure(let error):
                     self.errorMessage = "Token error: \(error.localizedDescription)"
                 }
             } else {
-                self.isAuthenticated = true
+                authService.isAuthenticated = true
             }
 
         case let errorNode as ErrorNode:
@@ -65,7 +63,6 @@ class LoginViewModel: ObservableObject {
 
         case let failureNode as FailureNode:
             self.errorMessage = "Authentication failed: \(failureNode.cause.localizedDescription)"
-            // Restart the flow on failure
             await startFlow()
 
         default:
@@ -121,11 +118,6 @@ struct LoginView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
-            .navigationDestination(isPresented: $viewModel.isAuthenticated) {
-                HomeView()
-                    .environmentObject(authService)
-                    .navigationBarBackButtonHidden(true)
-            }
         }
         .task {
             await viewModel.startFlow()

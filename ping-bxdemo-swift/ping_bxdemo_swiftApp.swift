@@ -6,8 +6,15 @@ struct ping_bxdemo_swiftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoginView(authService: authService)
+            if authService.isAuthenticated {
+                NavigationStack {
+                    HomeView()
+                }
                 .environmentObject(authService)
+            } else {
+                LoginView(authService: authService)
+                    .environmentObject(authService)
+            }
         }
     }
 }

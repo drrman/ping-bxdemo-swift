@@ -39,21 +39,26 @@ class LoginViewModel: ObservableObject {
     private var fallbackResumeUrl: String?
     private var fallbackCookies: [HTTPCookie] = []
 
-    private let daVinci: DaVinci
+    private var daVinci: DaVinci
     private let authService: AuthService
 
-    init() {
-        self.authService = AuthService.shared
+    private static func createFreshDaVinci() -> DaVinci {
         let pingConfig = PingConfig.current
-        self.daVinci = DaVinci.createDaVinci { daVinciConfig in
+        return DaVinci.createDaVinci { daVinciConfig in
             daVinciConfig.module(PingDavinci.OidcModule.config) { oidcValue in
                 oidcValue.clientId = pingConfig.clientId
                 oidcValue.scopes = Set(pingConfig.scopes)
                 oidcValue.redirectUri = pingConfig.redirectUri
                 oidcValue.discoveryEndpoint = "https://auth.pingone.com/\(pingConfig.environmentId)/as/.well-known/openid-configuration"
+                oidcValue.acrValues = pingConfig.loginPolicyId
                 oidcValue.additionalParameters = ["prompt": "login"]
             }
         }
+    }
+
+    init() {
+        self.authService = AuthService.shared
+        self.daVinci = Self.createFreshDaVinci()
         Task {
             await startFlow()
         }
@@ -63,6 +68,20 @@ class LoginViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         useFallbackForm = false
+        // Invalidate any existing server-side session before starting fresh
+        let signoffURL = URL(string: "https://auth.pingone.com/\(PingConfig.current.environmentId)/as/signoff")!
+        var signoffRequest = URLRequest(url: signoffURL)
+        signoffRequest.httpMethod = "GET"
+        _ = try? await URLSession.shared.data(for: signoffRequest)
+        // Clear all cached cookies to prevent stale session from previous flow
+        if let cookies = HTTPCookieStorage.shared.cookies {
+            for cookie in cookies {
+                HTTPCookieStorage.shared.deleteCookie(cookie)
+            }
+        }
+        URLCache.shared.removeAllCachedResponses()
+        // Create fresh DaVinci instance
+        self.daVinci = Self.createFreshDaVinci()
         let node = await daVinci.start()
         await handleNode(node)
     }
@@ -192,6 +211,15 @@ class LoginViewModel: ObservableObject {
                         return
                     }
                 }
+            }
+            // Check for localhost/empty URL error
+            let errorDesc = failureNode.cause.localizedDescription
+            if errorDesc.contains("localhost") || errorDesc.contains("Could not connect to the server") {
+                await MainActor.run {
+                    self.errorMessage = "Please check your input and try again."
+                    self.isLoading = false
+                }
+                return
             }
             await MainActor.run {
                 self.errorMessage = "Unable to connect. Please try again."
@@ -535,6 +563,13 @@ struct LoginView: View {
                 .frame(maxWidth: .infinity, alignment: .top)
             }
         }
+        .onAppear {
+            // Restart login flow if returning from registration with a stale/error state
+            let node = viewModel.state.node
+            if !viewModel.isLoading && (node == nil || node is ErrorNode || node is FailureNode) {
+                Task { await viewModel.startFlow() }
+            }
+        }
     }
 }
 
@@ -543,53 +578,70 @@ struct LoginView: View {
 struct LoginContinueNodeView: View {
     let viewModel: LoginViewModel
     let node: ContinueNode
+    @State private var showRegistration = false
 
     var body: some View {
         VStack(spacing: 16) {
-            ForEach(node.collectors, id: \.id) { collector in
-                switch collector {
-                case let text as TextCollector:
-                    TextField(text.label, text: Binding(
-                        get: { text.value },
-                        set: { text.value = $0 }
-                    ))
-                    .textFieldStyle(.roundedBorder)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .padding(.horizontal)
-
-                case let pass as PasswordCollector:
-                    SecureField(pass.label, text: Binding(
-                        get: { pass.value },
-                        set: { pass.value = $0 }
-                    ))
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal)
-
-                case let submit as SubmitCollector:
-                    PingButton(title: submit.label.isEmpty ? "Sign In" : submit.label) {
-                        Task { await viewModel.next(node) }
-                    }
-                    .padding(.horizontal)
-
-                case let flow as FlowCollector:
-                    Button(flow.label) {
-                        Task { await viewModel.next(node) }
-                    }
-                    .font(.callout)
-                    .foregroundColor(CustomerConfig.current.primaryColor)
-
-                default:
-                    EmptyView()
-                }
-            }
-
-            if !node.collectors.contains(where: { $0 is SubmitCollector }) {
-                PingButton(title: "Sign In") {
+            if node.collectors.isEmpty {
+                NodeMessageView(node: node) {
                     Task { await viewModel.next(node) }
                 }
-                .padding(.horizontal)
+            } else {
+                ForEach(node.collectors, id: \.id) { collector in
+                    switch collector {
+                    case let text as TextCollector:
+                        TextField(text.label, text: Binding(
+                            get: { text.value },
+                            set: { text.value = $0 }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .padding(.horizontal)
+
+                    case let pass as PasswordCollector:
+                        SecureField(pass.label, text: Binding(
+                            get: { pass.value },
+                            set: { pass.value = $0 }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal)
+
+                    case let submit as SubmitCollector:
+                        PingButton(title: submit.label.isEmpty ? "Sign In" : submit.label) {
+                            Task { await viewModel.next(node) }
+                        }
+                        .padding(.horizontal)
+
+                    case let flow as FlowCollector:
+                        Button(flow.label) {
+                            Task { await viewModel.next(node) }
+                        }
+                        .font(.callout)
+                        .foregroundColor(CustomerConfig.current.primaryColor)
+
+                    default:
+                        EmptyView()
+                    }
+                }
+
+                if !node.collectors.contains(where: { $0 is SubmitCollector }) {
+                    PingButton(title: "Sign In") {
+                        Task { await viewModel.next(node) }
+                    }
+                    .padding(.horizontal)
+                }
             }
+
+            Button("Don't have an account? Create one") {
+                showRegistration = true
+            }
+            .font(.callout)
+            .foregroundColor(CustomerConfig.current.primaryColor)
+            .padding(.top, 8)
+        }
+        .sheet(isPresented: $showRegistration) {
+            RegistrationView()
         }
     }
 }

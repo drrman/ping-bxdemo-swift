@@ -12,7 +12,7 @@ struct ping_bxdemo_swiftApp: App {
                 }
                 .environmentObject(authService)
             } else {
-                LoginView(authService: authService)
+                LoginView()
                     .environmentObject(authService)
             }
         }

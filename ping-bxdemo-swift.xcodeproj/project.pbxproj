@@ -7,24 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000010000000000000001 /* ping_bxdemo_swiftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001; };
-		A10000010000000000000002 /* CustomerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002; };
-		A10000010000000000000003 /* PingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003; };
-		A10000010000000000000004 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004; };
-		A10000010000000000000005 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005; };
-		A10000010000000000000006 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006; };
-		A10000010000000000000007 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007; };
-		A10000010000000000000008 /* StepUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008; };
-		A10000010000000000000009 /* BrandHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009; };
-		A1000001000000000000000A /* DaVinciFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000A; };
-		A1000001000000000000000B /* PingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000B; };
-		A1000001000000000000000C /* PingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000C; };
-		A1000001000000000000000D /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000D; };
-		A1000001000000000000000E /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000E; };
-		A1000001000000000000000F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F; };
-		A10000010000000000000030 /* ManualFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030; };
-		A10000010000000000000020 /* PingDavinci in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000001; };
-		A10000010000000000000021 /* PingOidc in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000002; };
+		7CE59B282F77FA8F0043A41C /* PingProtect in Frameworks */ = {isa = PBXBuildFile; productRef = 7CE59B272F77FA8F0043A41C /* PingProtect */; };
+		A10000010000000000000001 /* ping_bxdemo_swiftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* ping_bxdemo_swiftApp.swift */; };
+		A10000010000000000000002 /* CustomerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* CustomerConfig.swift */; };
+		A10000010000000000000003 /* PingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* PingConfig.swift */; };
+		A10000010000000000000004 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* LoginView.swift */; };
+		A10000010000000000000005 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* RegistrationView.swift */; };
+		A10000010000000000000006 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* HomeView.swift */; };
+		A10000010000000000000007 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* ProfileView.swift */; };
+		A10000010000000000000008 /* StepUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* StepUpView.swift */; };
+		A10000010000000000000009 /* BrandHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* BrandHeader.swift */; };
+		A1000001000000000000000A /* DaVinciFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000A /* DaVinciFormView.swift */; };
+		A1000001000000000000000B /* PingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000B /* PingButton.swift */; };
+		A1000001000000000000000C /* PingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000C /* PingTextField.swift */; };
+		A1000001000000000000000D /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000D /* AuthService.swift */; };
+		A1000001000000000000000E /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000E /* Color+Hex.swift */; };
+		A1000001000000000000000F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F /* Assets.xcassets */; };
+		A10000010000000000000020 /* PingDavinci in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000001 /* PingDavinci */; };
+		A10000010000000000000021 /* PingOidc in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000002 /* PingOidc */; };
+		A10000010000000000000030 /* ManualFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030 /* ManualFormView.swift */; };
+		A10000010000000000000031 /* ProfileManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031 /* ProfileManagementView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,8 +45,9 @@
 		A2000001000000000000000D /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		A2000001000000000000000E /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		A2000001000000000000000F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A20000010000000000000030 /* ManualFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualFormView.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* ping-bxdemo-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ping-bxdemo-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000010000000000000030 /* ManualFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualFormView.swift; sourceTree = "<group>"; };
+		A20000010000000000000031 /* ProfileManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileManagementView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,16 +57,25 @@
 			files = (
 				A10000010000000000000020 /* PingDavinci in Frameworks */,
 				A10000010000000000000021 /* PingOidc in Frameworks */,
+				7CE59B282F77FA8F0043A41C /* PingProtect in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A50000010000000000000001 /* = */ = {
+		7CE59B262F77FA8F0043A41C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A50000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
 				A50000010000000000000002 /* ping-bxdemo-swift */,
+				7CE59B262F77FA8F0043A41C /* Frameworks */,
 				A50000010000000000000009 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -99,6 +111,7 @@
 				A20000010000000000000006 /* HomeView.swift */,
 				A20000010000000000000007 /* ProfileView.swift */,
 				A20000010000000000000008 /* StepUpView.swift */,
+				A20000010000000000000031 /* ProfileManagementView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -166,6 +179,7 @@
 			packageProductDependencies = (
 				A30000010000000000000001 /* PingDavinci */,
 				A30000010000000000000002 /* PingOidc */,
+				7CE59B272F77FA8F0043A41C /* PingProtect */,
 			);
 			productName = "ping-bxdemo-swift";
 			productReference = A20000010000000000000010 /* ping-bxdemo-swift.app */;
@@ -238,6 +252,7 @@
 				A1000001000000000000000D /* AuthService.swift in Sources */,
 				A1000001000000000000000E /* Color+Hex.swift in Sources */,
 				A10000010000000000000030 /* ManualFormView.swift in Sources */,
+				A10000010000000000000031 /* ProfileManagementView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,6 +468,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7CE59B272F77FA8F0043A41C /* PingProtect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000010000000000000001 /* XCRemoteSwiftPackageReference "ping-ios-sdk" */;
+			productName = PingProtect;
+		};
 		A30000010000000000000001 /* PingDavinci */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AA0000010000000000000001 /* XCRemoteSwiftPackageReference "ping-ios-sdk" */;
@@ -464,7 +484,6 @@
 			productName = PingOidc;
 		};
 /* End XCSwiftPackageProductDependency section */
-
 	};
 	rootObject = A90000010000000000000001 /* Project object */;
 }

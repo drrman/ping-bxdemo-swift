@@ -2,6 +2,7 @@ import SwiftUI
 import PingDavinci
 import PingOidc
 import PingOrchestrate
+import PingProtect
 import CryptoKit
 
 // MARK: - DaVinci State Wrapper (from SDK sample pattern)
@@ -52,6 +53,14 @@ class LoginViewModel: ObservableObject {
                 oidcValue.discoveryEndpoint = "https://auth.pingone.com/\(pingConfig.environmentId)/as/.well-known/openid-configuration"
                 oidcValue.acrValues = pingConfig.loginPolicyId
                 oidcValue.additionalParameters = ["prompt": "login"]
+            }
+            daVinciConfig.module(ProtectLifecycleModule.config) { protectValue in
+                protectValue.isBehavioralDataCollection = true
+                protectValue.isLazyMetadata = true
+                protectValue.envId = pingConfig.environmentId
+                protectValue.isConsoleLogEnabled = true
+                protectValue.pauseBehavioralDataOnSuccess = true
+                protectValue.resumeBehavioralDataOnStart = true
             }
         }
     }
@@ -580,9 +589,30 @@ struct LoginContinueNodeView: View {
     let node: ContinueNode
     @State private var showRegistration = false
 
+    private var hasOnlyProtectCollectors: Bool {
+        let visibleCollectors = node.collectors.filter {
+            $0 is TextCollector || $0 is PasswordCollector || $0 is SubmitCollector ||
+            $0 is FlowCollector || $0 is SingleSelectCollector
+        }
+        return visibleCollectors.isEmpty && node.collectors.contains(where: { $0 is ProtectCollector })
+    }
+
     var body: some View {
         VStack(spacing: 16) {
-            if node.collectors.isEmpty {
+            if hasOnlyProtectCollectors {
+                // Protect-only node: collect signals and auto-advance
+                ProgressView("Verifying device...")
+                    .onAppear {
+                        Task {
+                            for collector in node.collectors {
+                                if let protect = collector as? ProtectCollector {
+                                    let _ = await protect.collect()
+                                }
+                            }
+                            await viewModel.next(node)
+                        }
+                    }
+            } else if node.collectors.isEmpty {
                 NodeMessageView(node: node) {
                     Task { await viewModel.next(node) }
                 }
@@ -606,6 +636,19 @@ struct LoginContinueNodeView: View {
                         ))
                         .textFieldStyle(.roundedBorder)
                         .padding(.horizontal)
+
+                    case let singleSelect as SingleSelectCollector:
+                        SingleSelectField(collector: singleSelect)
+                            .padding(.horizontal)
+
+                    case let protect as ProtectCollector:
+                        // Invisible — collect signals silently alongside other fields
+                        EmptyView()
+                            .onAppear {
+                                Task {
+                                    let _ = await protect.collect()
+                                }
+                            }
 
                     case let submit as SubmitCollector:
                         PingButton(title: submit.label.isEmpty ? "Sign In" : submit.label) {
@@ -633,12 +676,14 @@ struct LoginContinueNodeView: View {
                 }
             }
 
-            Button("Don't have an account? Create one") {
-                showRegistration = true
+            if node.collectors.contains(where: { ($0 as? TextCollector)?.key == "username" }) {
+                Button("Don't have an account? Create one") {
+                    showRegistration = true
+                }
+                .font(.callout)
+                .foregroundColor(CustomerConfig.current.primaryColor)
+                .padding(.top, 8)
             }
-            .font(.callout)
-            .foregroundColor(CustomerConfig.current.primaryColor)
-            .padding(.top, 8)
         }
         .sheet(isPresented: $showRegistration) {
             RegistrationView()

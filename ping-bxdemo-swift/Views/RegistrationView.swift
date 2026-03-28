@@ -2,6 +2,7 @@ import SwiftUI
 import PingDavinci
 import PingOidc
 import PingOrchestrate
+import PingProtect
 
 // MARK: - RegistrationViewModel
 
@@ -25,6 +26,14 @@ class RegistrationViewModel: ObservableObject {
                 oidcValue.discoveryEndpoint = "https://auth.pingone.com/\(pingConfig.environmentId)/as/.well-known/openid-configuration"
                 oidcValue.acrValues = pingConfig.registrationPolicyId
                 oidcValue.additionalParameters = ["prompt": "login"]
+            }
+            daVinciConfig.module(ProtectLifecycleModule.config) { protectValue in
+                protectValue.isBehavioralDataCollection = true
+                protectValue.isLazyMetadata = true
+                protectValue.envId = pingConfig.environmentId
+                protectValue.isConsoleLogEnabled = true
+                protectValue.pauseBehavioralDataOnSuccess = true
+                protectValue.resumeBehavioralDataOnStart = true
             }
         }
         Task {
@@ -217,10 +226,29 @@ struct RegistrationContinueNodeView: View {
     let viewModel: RegistrationViewModel
     let node: ContinueNode
 
+    private var hasOnlyProtectCollectors: Bool {
+        let visibleCollectors = node.collectors.filter {
+            $0 is TextCollector || $0 is PasswordCollector || $0 is SubmitCollector ||
+            $0 is FlowCollector || $0 is SingleSelectCollector
+        }
+        return visibleCollectors.isEmpty && node.collectors.contains(where: { $0 is ProtectCollector })
+    }
+
     var body: some View {
         VStack(spacing: 16) {
-            if node.collectors.isEmpty {
-                // Handle customHtmlMessage — no collectors, just a message + continue
+            if hasOnlyProtectCollectors {
+                ProgressView("Verifying device...")
+                    .onAppear {
+                        Task {
+                            for collector in node.collectors {
+                                if let protect = collector as? ProtectCollector {
+                                    let _ = await protect.collect()
+                                }
+                            }
+                            await viewModel.next(node)
+                        }
+                    }
+            } else if node.collectors.isEmpty {
                 NodeMessageView(node: node) {
                     Task { await viewModel.next(node) }
                 }
@@ -244,6 +272,18 @@ struct RegistrationContinueNodeView: View {
                         ))
                         .textFieldStyle(.roundedBorder)
                         .padding(.horizontal)
+
+                    case let singleSelect as SingleSelectCollector:
+                        SingleSelectField(collector: singleSelect)
+                            .padding(.horizontal)
+
+                    case let protect as ProtectCollector:
+                        EmptyView()
+                            .onAppear {
+                                Task {
+                                    let _ = await protect.collect()
+                                }
+                            }
 
                     case let submit as SubmitCollector:
                         PingButton(title: submit.label.isEmpty ? "Continue" : submit.label) {

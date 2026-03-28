@@ -133,12 +133,29 @@ struct ProfileView: View {
                 .cornerRadius(10)
                 .padding(.horizontal)
 
+                // Manage Profile button
+                NavigationLink {
+                    ProfileManagementView()
+                        .environmentObject(authService)
+                } label: {
+                    HStack {
+                        Image(systemName: "person.crop.circle")
+                        Text("Manage Profile")
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundColor(config.buttonColor)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(config.buttonBgColor)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+
                 // Sign Out button
                 PingButton(title: "Sign Out") {
                     authService.clearTokens()
                 }
                 .padding(.horizontal)
-                .padding(.top, 8)
             }
             .padding(.top, 20)
             .padding(.bottom, 40)

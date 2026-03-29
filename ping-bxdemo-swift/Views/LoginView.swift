@@ -647,9 +647,11 @@ struct LoginView: View {
                             case is SuccessNode:
                                 ProgressView("Signing in...")
                             case let errorNode as ErrorNode:
-                                Text(errorNode.message)
-                                    .foregroundColor(.red)
-                                    .padding()
+                                if errorNode.continueNode == nil {
+                                    Text(errorNode.message)
+                                        .foregroundColor(.red)
+                                        .padding()
+                                }
                             case is FailureNode:
                                 Text("Connection failed")
                                     .foregroundColor(.red)

@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 import PingDavinci
 import PingOidc
 import PingOrchestrate
@@ -514,6 +515,10 @@ class LoginViewModel: ObservableObject {
 struct LoginView: View {
     @EnvironmentObject private var authService: AuthService
     @StateObject private var viewModel = LoginViewModel()
+    @StateObject private var oidcService = OIDCAuthService()
+    @State private var oidcError: String? = nil
+    @State private var isOIDCLoading: Bool = false
+    private let customerConfig = CustomerConfig.current
 
     var body: some View {
         ZStack {
@@ -523,49 +528,95 @@ struct LoginView: View {
                 VStack(spacing: 24) {
                     BrandHeader()
 
-                    if viewModel.isLoading {
-                        ProgressView("Connecting...")
-                            .padding(.top, 40)
-                    } else if viewModel.useFallbackForm {
-                        ManualFormView(
-                            fields: viewModel.fallbackFields,
-                            submitLabel: "Sign In"
-                        ) { values in
-                            Task { await viewModel.submitFallback(values: values) }
+                    if customerConfig.authMode == .oidcRedirect {
+                        // OIDC Redirect mode — single Sign In button
+                        Button(action: {
+                            Task {
+                                isOIDCLoading = true
+                                oidcError = nil
+                                do {
+                                    try await oidcService.startLogin(authService: authService)
+                                } catch ASWebAuthenticationSessionError.canceledLogin {
+                                    // User cancelled — silent, no error shown
+                                } catch {
+                                    oidcError = error.localizedDescription
+                                }
+                                isOIDCLoading = false
+                            }
+                        }) {
+                            if isOIDCLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(customerConfig.buttonBgColor)
+                                    .cornerRadius(10)
+                            } else {
+                                Text("Sign In")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(customerConfig.buttonBgColor)
+                                    .foregroundColor(customerConfig.buttonColor)
+                                    .cornerRadius(10)
+                                    .fontWeight(.semibold)
+                            }
                         }
                         .padding(.horizontal)
+                        .padding(.top, 40)
+
+                        if let error = oidcError {
+                            Text(error)
+                                .foregroundColor(.red)
+                                .font(.caption)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
                     } else {
-                        switch viewModel.state.node {
-                        case let continueNode as ContinueNode:
-                            LoginContinueNodeView(viewModel: viewModel, node: continueNode)
-                        case is SuccessNode:
-                            ProgressView("Signing in...")
-                        case let errorNode as ErrorNode:
-                            Text(errorNode.message)
-                                .foregroundColor(.red)
-                                .padding()
-                        case is FailureNode:
-                            Text("Connection failed")
-                                .foregroundColor(.red)
-                        default:
-                            Text("Waiting...")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-
-                    if let error = viewModel.errorMessage {
-                        Text(error)
-                            .foregroundColor(.red)
-                            .font(.callout)
-                            .multilineTextAlignment(.center)
+                        // DaVinci mode — existing headless flow
+                        if viewModel.isLoading {
+                            ProgressView("Connecting...")
+                                .padding(.top, 40)
+                        } else if viewModel.useFallbackForm {
+                            ManualFormView(
+                                fields: viewModel.fallbackFields,
+                                submitLabel: "Sign In"
+                            ) { values in
+                                Task { await viewModel.submitFallback(values: values) }
+                            }
                             .padding(.horizontal)
-
-                        Button("Try Again") {
-                            Task { await viewModel.startFlow() }
+                        } else {
+                            switch viewModel.state.node {
+                            case let continueNode as ContinueNode:
+                                LoginContinueNodeView(viewModel: viewModel, node: continueNode)
+                            case is SuccessNode:
+                                ProgressView("Signing in...")
+                            case let errorNode as ErrorNode:
+                                Text(errorNode.message)
+                                    .foregroundColor(.red)
+                                    .padding()
+                            case is FailureNode:
+                                Text("Connection failed")
+                                    .foregroundColor(.red)
+                            default:
+                                Text("Waiting...")
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                        .font(.callout)
-                        .fontWeight(.semibold)
-                        .foregroundColor(CustomerConfig.current.primaryColor)
+
+                        if let error = viewModel.errorMessage {
+                            Text(error)
+                                .foregroundColor(.red)
+                                .font(.callout)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+
+                            Button("Try Again") {
+                                Task { await viewModel.startFlow() }
+                            }
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(CustomerConfig.current.primaryColor)
+                        }
                     }
                 }
                 .padding(.top, 40)
@@ -573,10 +624,12 @@ struct LoginView: View {
             }
         }
         .onAppear {
-            // Restart login flow if returning from registration with a stale/error state
-            let node = viewModel.state.node
-            if !viewModel.isLoading && (node == nil || node is ErrorNode || node is FailureNode) {
-                Task { await viewModel.startFlow() }
+            // Only auto-start DaVinci flow if in davinci mode
+            if customerConfig.authMode == .davinci {
+                let node = viewModel.state.node
+                if !viewModel.isLoading && (node == nil || node is ErrorNode || node is FailureNode) {
+                    Task { await viewModel.startFlow() }
+                }
             }
         }
     }

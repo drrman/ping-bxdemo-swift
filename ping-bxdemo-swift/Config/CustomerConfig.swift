@@ -1,12 +1,20 @@
 import SwiftUI
 
+enum AuthMode {
+    case davinci
+    case oidcRedirect
+}
+
 struct ContentTile {
-    let icon: String
     let title: String
     let subtitle: String
+    let icon: String
+    enum TileAction { case navigate, stepUp }
+    let action: TileAction
 }
 
 struct CustomerConfig {
+    let authMode: AuthMode
     let appName: String
     let tagline: String
     let primaryColor: Color
@@ -22,10 +30,13 @@ struct CustomerConfig {
     let contentTiles: [ContentTile]
     let stepUpTitle: String
     let stepUpSubtitle: String
+}
 
+extension CustomerConfig {
     static let current = CustomerConfig(
-        appName: "Southwest Airlines",
-        tagline: "Without a heart, it's just a machine.",
+        authMode: .oidcRedirect,
+        appName: "",
+        tagline: "",
         primaryColor: Color(hex: "#304CB2"),
         secondaryColor: Color(hex: "#FFBF27"),
         buttonColor: Color(hex: "#FFFFFF"),
@@ -35,14 +46,34 @@ struct CustomerConfig {
         logoAssetName: "logo",
         bannerAssetName: "banner",
         vertical: "airlines",
-        customerSlug: "southwest-airlines",
+        customerSlug: "",
         contentTiles: [
-            ContentTile(icon: "airplane", title: "My Trips", subtitle: "View and manage your upcoming flights"),
-            ContentTile(icon: "star.fill", title: "Rapid Rewards", subtitle: "You have 24,500 points — redeem for your next trip"),
-            ContentTile(icon: "tag.fill", title: "Flight Deals", subtitle: "Exclusive member offers available now"),
-            ContentTile(icon: "lock.shield.fill", title: "Travel Documents", subtitle: "Passport and secure ID management"),
+            ContentTile(
+                title: "My Trips",
+                subtitle: "View and manage your upcoming flights",
+                icon: "airplane",
+                action: .navigate
+            ),
+            ContentTile(
+                title: "Rapid Rewards",
+                subtitle: "You have 24,500 points — redeem for your next trip",
+                icon: "star.fill",
+                action: .navigate
+            ),
+            ContentTile(
+                title: "Flight Deals",
+                subtitle: "Exclusive member offers available now",
+                icon: "tag.fill",
+                action: .navigate
+            ),
+            ContentTile(
+                title: "Travel Documents",
+                subtitle: "Passport and security",
+                icon: "lock.shield.fill",
+                action: .stepUp
+            )
         ],
         stepUpTitle: "Verify Your Identity",
-        stepUpSubtitle: "Additional verification is required to access this feature"
+        stepUpSubtitle: "This section requires additional verification"
     )
 }

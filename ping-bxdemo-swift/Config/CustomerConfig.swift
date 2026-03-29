@@ -34,7 +34,7 @@ struct CustomerConfig {
 
 extension CustomerConfig {
     static let current = CustomerConfig(
-        authMode: .oidcRedirect,
+        authMode: .davinci,
         appName: "",
         tagline: "",
         primaryColor: Color(hex: "#304CB2"),

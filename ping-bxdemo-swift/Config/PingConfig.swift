@@ -6,6 +6,7 @@ struct PingConfig {
     let loginPolicyId: String
     let registrationPolicyId: String
     let stepUpPolicyId: String
+    let oidcPolicyId: String
     let redirectUri: String
     let scopes: [String]
 
@@ -15,6 +16,7 @@ struct PingConfig {
         loginPolicyId: "5a28929c0728d0cdc3c11db210afb9b5",
         registrationPolicyId: "407356ac7bf4f1e88c627d63a3735a7e",
         stepUpPolicyId: "",
+        oidcPolicyId: "",
         redirectUri: "bxdemo://callback",
         scopes: ["openid", "profile", "email"]
     )

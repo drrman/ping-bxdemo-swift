@@ -69,8 +69,12 @@ class LoginViewModel: ObservableObject {
     init() {
         self.authService = AuthService.shared
         self.daVinci = Self.createFreshDaVinci()
-        Task {
-            await startFlow()
+        if CustomerConfig.current.authMode == .davinci {
+            Task {
+                await startFlow()
+            }
+        } else {
+            self.isLoading = false
         }
     }
 
@@ -529,48 +533,98 @@ struct LoginView: View {
                     BrandHeader()
 
                     if customerConfig.authMode == .oidcRedirect {
-                        // OIDC Redirect mode — single Sign In button
-                        Button(action: {
-                            Task {
-                                isOIDCLoading = true
-                                oidcError = nil
-                                do {
-                                    try await oidcService.startLogin(authService: authService)
-                                } catch ASWebAuthenticationSessionError.canceledLogin {
-                                    // User cancelled — silent, no error shown
-                                } catch {
-                                    oidcError = error.localizedDescription
-                                }
-                                isOIDCLoading = false
-                            }
-                        }) {
-                            if isOIDCLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(customerConfig.buttonBgColor)
-                                    .cornerRadius(10)
-                            } else {
-                                Text("Sign In")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(customerConfig.buttonBgColor)
-                                    .foregroundColor(customerConfig.buttonColor)
-                                    .cornerRadius(10)
-                                    .fontWeight(.semibold)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 40)
+                        VStack(spacing: 0) {
+                            Spacer()
 
-                        if let error = oidcError {
-                            Text(error)
-                                .foregroundColor(.red)
-                                .font(.caption)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
+                            // Brand area
+                            VStack(spacing: 16) {
+                                // Try customer logo first, fall back to shield icon
+                                if UIImage(named: customerConfig.logoAssetName) != nil {
+                                    Image(customerConfig.logoAssetName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 80)
+                                } else {
+                                    Image(systemName: "lock.shield.fill")
+                                        .font(.system(size: 64))
+                                        .foregroundColor(customerConfig.primaryColor)
+                                }
+
+                                if !customerConfig.appName.isEmpty {
+                                    Text(customerConfig.appName)
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        .multilineTextAlignment(.center)
+                                } else {
+                                    Text("BXDemo")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.primary)
+                                }
+
+                                if !customerConfig.tagline.isEmpty {
+                                    Text(customerConfig.tagline)
+                                        .font(.subheadline)
+                                        .foregroundColor(customerConfig.secondaryColor)
+                                        .multilineTextAlignment(.center)
+                                } else {
+                                    Text("Secure identity powered by Ping Identity")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .padding(.horizontal, 32)
+
+                            Spacer()
+                            Spacer()
+
+                            // Sign In button
+                            Button(action: {
+                                Task {
+                                    isOIDCLoading = true
+                                    oidcError = nil
+                                    do {
+                                        try await oidcService.startLogin(authService: authService)
+                                    } catch ASWebAuthenticationSessionError.canceledLogin {
+                                        // User cancelled — silent
+                                    } catch {
+                                        oidcError = error.localizedDescription
+                                    }
+                                    isOIDCLoading = false
+                                }
+                            }) {
+                                if isOIDCLoading {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(customerConfig.buttonBgColor)
+                                        .cornerRadius(10)
+                                } else {
+                                    Text("Sign In")
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(customerConfig.buttonBgColor)
+                                        .foregroundColor(customerConfig.buttonColor)
+                                        .cornerRadius(10)
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                            .padding(.horizontal, 32)
+
+                            if let error = oidcError {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                    .font(.caption)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                    .padding(.top, 8)
+                            }
+
+                            Spacer()
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         // DaVinci mode — existing headless flow
                         if viewModel.isLoading {
@@ -624,12 +678,8 @@ struct LoginView: View {
             }
         }
         .onAppear {
-            // Only auto-start DaVinci flow if in davinci mode
-            if customerConfig.authMode == .davinci {
-                let node = viewModel.state.node
-                if !viewModel.isLoading && (node == nil || node is ErrorNode || node is FailureNode) {
-                    Task { await viewModel.startFlow() }
-                }
+            if CustomerConfig.current.authMode == .davinci {
+                Task { await viewModel.startFlow() }
             }
         }
     }

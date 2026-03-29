@@ -15,6 +15,20 @@ class OIDCAuthService: NSObject, ObservableObject {
 
     /// Start the OIDC login flow via ASWebAuthenticationSession
     func startLogin(authService: AuthService) async throws {
+        // Clear stale PingOne session before starting fresh
+        let signoffURL = URL(string: "https://auth.pingone.com/\(config.environmentId)/as/signoff")!
+        var signoffRequest = URLRequest(url: signoffURL)
+        signoffRequest.httpMethod = "GET"
+        _ = try? await URLSession.shared.data(for: signoffRequest)
+
+        // Also clear cached cookies
+        if let cookies = HTTPCookieStorage.shared.cookies {
+            for cookie in cookies {
+                HTTPCookieStorage.shared.deleteCookie(cookie)
+            }
+        }
+        URLCache.shared.removeAllCachedResponses()
+
         let (verifier, challenge) = generatePKCE()
         self.codeVerifier = verifier
 
@@ -70,9 +84,8 @@ class OIDCAuthService: NSObject, ObservableObject {
             URLQueryItem(name: "prompt", value: "login"),
         ]
 
-        // If loginPolicyId is set, use it as acr_values
-        if !config.loginPolicyId.isEmpty {
-            params.append(URLQueryItem(name: "acr_values", value: config.loginPolicyId))
+        if !config.oidcPolicyId.isEmpty {
+            params.append(URLQueryItem(name: "acr_values", value: config.oidcPolicyId))
         }
 
         if let hint = hint {
@@ -159,12 +172,7 @@ extension OIDCAuthService: ASWebAuthenticationPresentationContextProviding {
     nonisolated func presentationAnchor(
         for session: ASWebAuthenticationSession
     ) -> ASPresentationAnchor {
-        DispatchQueue.main.sync {
-            UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .flatMap { $0.windows }
-                .first { $0.isKeyWindow } ?? ASPresentationAnchor()
-        }
+        ASPresentationAnchor()
     }
 }
 

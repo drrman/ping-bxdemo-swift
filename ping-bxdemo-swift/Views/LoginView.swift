@@ -189,12 +189,14 @@ class LoginViewModel: ObservableObject {
 
         case let errorNode as ErrorNode:
             print("[LoginVM] ErrorNode — message: \(errorNode.message)")
-            await MainActor.run {
-                self.errorMessage = errorNode.message
-                if let fallback = errorNode.continueNode {
-                    self.state = DavinciState(node: fallback)
+            if let continueNode = errorNode.continueNode {
+                print("[LoginVM] ErrorNode has continueNode — advancing flow instead of showing error")
+                await handleNode(continueNode)
+            } else {
+                await MainActor.run {
+                    self.errorMessage = errorNode.message
+                    self.isLoading = false
                 }
-                self.isLoading = false
             }
 
         case let failureNode as FailureNode:

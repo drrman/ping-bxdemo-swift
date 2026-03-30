@@ -538,49 +538,6 @@ struct LoginView: View {
                         VStack(spacing: 0) {
                             Spacer()
 
-                            // Brand area
-                            VStack(spacing: 16) {
-                                // Try customer logo first, fall back to shield icon
-                                if UIImage(named: customerConfig.logoAssetName) != nil {
-                                    Image(customerConfig.logoAssetName)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(height: 80)
-                                } else {
-                                    Image(systemName: "lock.shield.fill")
-                                        .font(.system(size: 64))
-                                        .foregroundColor(customerConfig.primaryColor)
-                                }
-
-                                if !customerConfig.appName.isEmpty {
-                                    Text(customerConfig.appName)
-                                        .font(.largeTitle)
-                                        .fontWeight(.bold)
-                                        .multilineTextAlignment(.center)
-                                } else {
-                                    Text("BXDemo")
-                                        .font(.largeTitle)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.primary)
-                                }
-
-                                if !customerConfig.tagline.isEmpty {
-                                    Text(customerConfig.tagline)
-                                        .font(.subheadline)
-                                        .foregroundColor(customerConfig.secondaryColor)
-                                        .multilineTextAlignment(.center)
-                                } else {
-                                    Text("Secure identity powered by Ping Identity")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
-                            }
-                            .padding(.horizontal, 32)
-
-                            Spacer()
-                            Spacer()
-
                             // Sign In button
                             Button(action: {
                                 Task {

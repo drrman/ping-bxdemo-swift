@@ -12,9 +12,8 @@ class StepUpViewModel: ObservableObject {
     @Published var notConfigured = false
 
     private var daVinci: DaVinci?
-    var onSuccess: (() -> Void)?
 
-    func startFlow() async {
+    func startStepUp(userId: String) async {
         let pingConfig = PingConfig.current
 
         guard !pingConfig.stepUpPolicyId.isEmpty else {
@@ -37,13 +36,37 @@ class StepUpViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         let node = await dv.start()
-        await handleNode(node)
+
+        // Auto-populate userId on the first node and submit automatically
+        if let continueNode = node as? ContinueNode {
+            for collector in continueNode.collectors {
+                if let textCollector = collector as? TextCollector,
+                   textCollector.key == "userId" {
+                    textCollector.value = userId
+                }
+            }
+            let nextNode = await continueNode.next()
+            await handleNode(nextNode)
+        } else {
+            await handleNode(node)
+        }
     }
 
     func handleNode(_ node: Node) async {
         isLoading = false
         switch node {
         case let continueNode as ContinueNode:
+            // Check for stepUpComplete in the response
+            if let stepUpComplete = continueNode.input["stepUpComplete"] as? String,
+               stepUpComplete == "true" {
+                self.isVerified = true
+                return
+            }
+            if let success = continueNode.input["success"] as? Bool, success,
+               continueNode.input["stepUpComplete"] != nil {
+                self.isVerified = true
+                return
+            }
             self.currentNode = continueNode
             self.errorMessage = nil
 
@@ -74,7 +97,18 @@ struct StepUpView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = StepUpViewModel()
     private let config = CustomerConfig.current
-    var onSuccess: (() -> Void)?
+
+    let tileTitle: String
+    let tileSubtitle: String
+    let userId: String
+
+    /// Whether the current node is a "Choose Verification Method" screen
+    private var isVerificationMethodNode: Bool {
+        guard let continueNode = viewModel.currentNode as? ContinueNode else { return false }
+        return continueNode.collectors.contains { collector in
+            (collector as? TextCollector)?.key == "verificationMethod"
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -113,23 +147,41 @@ struct StepUpView: View {
                         }
                         .padding(.top, 20)
                     } else if viewModel.isVerified {
-                        VStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
+                        // Success screen
+                        VStack(spacing: 16) {
+                            Image(systemName: "checkmark.shield.fill")
                                 .font(.system(size: 60))
                                 .foregroundColor(.green)
+
                             Text("Identity Verified")
                                 .font(.title2)
                                 .fontWeight(.bold)
+
+                            Text("You now have access to this secure area")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            VStack(spacing: 4) {
+                                Text(tileTitle)
+                                    .font(.headline)
+                                    .foregroundColor(config.primaryColor)
+                                Text(tileSubtitle)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.top, 8)
+
+                            PingButton(title: "Done") {
+                                dismiss()
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 12)
                         }
                         .padding(.top, 20)
-                        .task {
-                            try? await Task.sleep(nanoseconds: 1_500_000_000)
-                            onSuccess?()
-                            dismiss()
-                        }
                     } else {
                         if viewModel.isLoading {
-                            ProgressView("Connecting...")
+                            ProgressView("Verifying...")
                                 .padding(.top, 20)
                         }
 
@@ -139,15 +191,41 @@ struct StepUpView: View {
                                 .font(.callout)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
+
+                            Button("Dismiss") {
+                                dismiss()
+                            }
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(config.primaryColor)
+                            .padding(.top, 4)
                         }
 
                         if let continueNode = viewModel.currentNode as? ContinueNode, !viewModel.isLoading {
-                            DaVinciFormView(node: continueNode) { node in
-                                Task {
-                                    await viewModel.submitNode(node)
+                            if isVerificationMethodNode {
+                                // Render verification method choice as two buttons
+                                VStack(spacing: 12) {
+                                    Text("Choose Verification Method")
+                                        .font(.headline)
+
+                                    PingButton(title: "Send SMS Code") {
+                                        setVerificationMethodAndSubmit(continueNode, value: "sms")
+                                    }
+                                    .padding(.horizontal)
+
+                                    PingButton(title: "Send Email Code") {
+                                        setVerificationMethodAndSubmit(continueNode, value: "email")
+                                    }
+                                    .padding(.horizontal)
                                 }
+                            } else {
+                                DaVinciFormView(node: continueNode) { node in
+                                    Task {
+                                        await viewModel.submitNode(node)
+                                    }
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
                         }
                     }
                 }
@@ -164,11 +242,23 @@ struct StepUpView: View {
             }
         }
         .task {
-            await viewModel.startFlow()
+            await viewModel.startStepUp(userId: userId)
+        }
+    }
+
+    private func setVerificationMethodAndSubmit(_ node: ContinueNode, value: String) {
+        for collector in node.collectors {
+            if let textCollector = collector as? TextCollector,
+               textCollector.key == "verificationMethod" {
+                textCollector.value = value
+            }
+        }
+        Task {
+            await viewModel.submitNode(node)
         }
     }
 }
 
 #Preview {
-    StepUpView()
+    StepUpView(tileTitle: "Travel Documents", tileSubtitle: "Passport and security", userId: "test-user-id")
 }

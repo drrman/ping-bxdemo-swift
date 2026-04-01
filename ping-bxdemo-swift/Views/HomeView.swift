@@ -4,7 +4,12 @@ struct HomeView: View {
     private let config = CustomerConfig.current
     @State private var selectedTab = 0
     @State private var showStepUp = false
-    @State private var stepUpSucceeded = false
+    @State private var selectedStepUpTile: ContentTile? = nil
+
+    private var currentUserId: String {
+        guard let claims = AuthService.shared.getUserFromToken() else { return "" }
+        return claims["sub"] as? String ?? ""
+    }
 
     private var firstName: String {
         guard let claims = AuthService.shared.getUserFromToken() else { return "" }
@@ -82,7 +87,8 @@ struct HomeView: View {
                 VStack(spacing: 12) {
                     ForEach(Array(config.contentTiles.enumerated()), id: \.offset) { _, tile in
                         ContentTileCard(tile: tile) {
-                            if tile.icon == "lock.shield.fill" {
+                            if tile.action == .stepUp {
+                                selectedStepUpTile = tile
                                 showStepUp = true
                             }
                         }
@@ -106,14 +112,13 @@ struct HomeView: View {
             }
         }
         .sheet(isPresented: $showStepUp) {
-            StepUpView {
-                stepUpSucceeded = true
+            if let tile = selectedStepUpTile {
+                StepUpView(
+                    tileTitle: tile.title,
+                    tileSubtitle: tile.subtitle,
+                    userId: currentUserId
+                )
             }
-        }
-        .alert("Coming Soon", isPresented: $stepUpSucceeded) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Travel Documents will be available in a future update.")
         }
     }
 }
@@ -154,6 +159,17 @@ private struct ContentTileCard: View {
             .padding()
             .background(Color(.secondarySystemBackground))
             .cornerRadius(12)
+            .overlay(alignment: .topTrailing) {
+                if tile.action == .stepUp {
+                    Image(systemName: "lock.fill")
+                        .font(.caption2)
+                        .foregroundColor(.white)
+                        .padding(4)
+                        .background(config.primaryColor)
+                        .clipShape(Circle())
+                        .offset(x: -8, y: 8)
+                }
+            }
         }
         .buttonStyle(.plain)
     }

@@ -5,7 +5,8 @@ enum AuthMode {
     case oidcRedirect
 }
 
-struct ContentTile {
+struct ContentTile: Identifiable {
+    let id = UUID()
     let title: String
     let subtitle: String
     let icon: String

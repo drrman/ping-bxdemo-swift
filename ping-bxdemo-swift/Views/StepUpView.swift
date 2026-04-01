@@ -15,7 +15,6 @@ class StepUpViewModel: ObservableObject {
 
     func startStepUp(userId: String) async {
         let pingConfig = PingConfig.current
-
         guard !pingConfig.stepUpPolicyId.isEmpty else {
             isLoading = false
             notConfigured = true
@@ -28,7 +27,7 @@ class StepUpViewModel: ObservableObject {
                 oidcValue.scopes = Set(pingConfig.scopes)
                 oidcValue.redirectUri = pingConfig.redirectUri
                 oidcValue.discoveryEndpoint = "https://auth.pingone.com/\(pingConfig.environmentId)/as/.well-known/openid-configuration"
-                oidcValue.additionalParameters = ["prompt": "login"]
+                oidcValue.additionalParameters = ["prompt": "login", "acr_values": pingConfig.stepUpPolicyId]
             }
         }
         self.daVinci = dv
@@ -56,14 +55,16 @@ class StepUpViewModel: ObservableObject {
         isLoading = false
         switch node {
         case let continueNode as ContinueNode:
-            // Check for stepUpComplete in the response
-            if let stepUpComplete = continueNode.input["stepUpComplete"] as? String,
+            // Check for stepUpComplete in additionalProperties
+            if let additionalProps = continueNode.input["additionalProperties"] as? [String: Any],
+               let stepUpComplete = additionalProps["stepUpComplete"] as? String,
                stepUpComplete == "true" {
                 self.isVerified = true
                 return
             }
+            // Also check top-level success flag from createSuccessResponse
             if let success = continueNode.input["success"] as? Bool, success,
-               continueNode.input["stepUpComplete"] != nil {
+               continueNode.input["capabilityName"] as? String == "createSuccessResponse" {
                 self.isVerified = true
                 return
             }

@@ -11,11 +11,11 @@ struct PingConfig {
     let scopes: [String]
 
     static let current = PingConfig(
-        environmentId: "0cd2fe5b-cbfa-4164-a1cd-fab99a27bf92",
-        clientId: "26083e6f-d1ce-4fc4-9b74-e777b29d3687",
-        loginPolicyId: "5a28929c0728d0cdc3c11db210afb9b5",
-        registrationPolicyId: "407356ac7bf4f1e88c627d63a3735a7e",
-        stepUpPolicyId: "",
+        environmentId: "e08cdcdf-2389-418f-9064-aaa9ee4c5150",
+        clientId: "78427c21-993e-4852-a05b-72e0139a41a2",
+        loginPolicyId: "56f1907ce63e06dc0e9493ff1b72ba8e",
+        registrationPolicyId: "01292a062d3e2960d2953f92849c6c17",
+        stepUpPolicyId: "9c312501435e0e4875de485b50d0ff58",
         oidcPolicyId: "",
         redirectUri: "bxdemo://callback",
         scopes: ["openid", "profile", "email"]

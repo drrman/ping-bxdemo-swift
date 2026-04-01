@@ -3,7 +3,6 @@ import SwiftUI
 struct HomeView: View {
     private let config = CustomerConfig.current
     @State private var selectedTab = 0
-    @State private var showStepUp = false
     @State private var selectedStepUpTile: ContentTile? = nil
 
     private var currentUserId: String {
@@ -89,7 +88,6 @@ struct HomeView: View {
                         ContentTileCard(tile: tile) {
                             if tile.action == .stepUp {
                                 selectedStepUpTile = tile
-                                showStepUp = true
                             }
                         }
                     }
@@ -111,14 +109,12 @@ struct HomeView: View {
                 }
             }
         }
-        .sheet(isPresented: $showStepUp) {
-            if let tile = selectedStepUpTile {
-                StepUpView(
-                    tileTitle: tile.title,
-                    tileSubtitle: tile.subtitle,
-                    userId: currentUserId
-                )
-            }
+        .sheet(item: $selectedStepUpTile) { tile in
+            StepUpView(
+                tileTitle: tile.title,
+                tileSubtitle: tile.subtitle,
+                userId: currentUserId
+            )
         }
     }
 }

@@ -30,6 +30,12 @@ struct DaVinciFormView: View {
                 }
         } else {
             VStack(spacing: 16) {
+                if !node.name.isEmpty && node.name != "Start Login" {
+                    Text(node.name)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
+
                 ForEach(Array(node.collectors.enumerated()), id: \.offset) { _, collector in
                     collectorView(for: collector)
                 }

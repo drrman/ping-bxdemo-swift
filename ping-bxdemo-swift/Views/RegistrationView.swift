@@ -164,6 +164,11 @@ struct RegistrationView: View {
                         .padding(.top, 40)
                         .task {
                             try? await Task.sleep(nanoseconds: 2_000_000_000)
+                            // Clear stale ST cookie from registration flow before returning to login
+                            let signoffURL = URL(string: "https://auth.pingone.com/\(PingConfig.current.environmentId)/as/signoff")!
+                            var signoffRequest = URLRequest(url: signoffURL)
+                            signoffRequest.httpMethod = "GET"
+                            _ = try? await URLSession.shared.data(for: signoffRequest)
                             dismiss()
                         }
                     } else if viewModel.isLoading {
@@ -253,6 +258,13 @@ struct RegistrationContinueNodeView: View {
                     Task { await viewModel.next(node) }
                 }
             } else {
+                if !node.name.isEmpty && node.name != "Start Login" {
+                    Text(node.name)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal)
+                }
+
                 ForEach(node.collectors, id: \.id) { collector in
                     switch collector {
                     case let text as TextCollector:

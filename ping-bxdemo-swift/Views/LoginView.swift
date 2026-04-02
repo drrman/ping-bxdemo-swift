@@ -683,6 +683,13 @@ struct LoginContinueNodeView: View {
                     Task { await viewModel.next(node) }
                 }
             } else {
+                if !node.name.isEmpty && node.name != "Start Login" {
+                    Text(node.name)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal)
+                }
+
                 ForEach(node.collectors, id: \.id) { collector in
                     switch collector {
                     case let text as TextCollector:

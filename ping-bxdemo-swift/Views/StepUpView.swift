@@ -27,7 +27,8 @@ class StepUpViewModel: ObservableObject {
                 oidcValue.scopes = Set(pingConfig.scopes)
                 oidcValue.redirectUri = pingConfig.redirectUri
                 oidcValue.discoveryEndpoint = "https://auth.pingone.com/\(pingConfig.environmentId)/as/.well-known/openid-configuration"
-                oidcValue.additionalParameters = ["prompt": "login", "acr_values": pingConfig.stepUpPolicyId]
+                oidcValue.acrValues = pingConfig.stepUpPolicyId
+                oidcValue.additionalParameters = ["prompt": "login"]
             }
         }
         self.daVinci = dv

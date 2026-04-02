@@ -5,17 +5,25 @@ struct BrandHeader: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Image(config.logoAssetName)
-                .resizable()
-                .scaledToFit()
-                .frame(height: 60)
-            Text(config.appName)
+            if let uiImage = UIImage(named: config.logoAssetName) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 60)
+            } else {
+                Image(systemName: "lock.shield.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 60)
+                    .foregroundColor(config.primaryColor)
+            }
+            Text(config.appName.isEmpty ? "BXDemo" : config.appName)
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(config.primaryColor)
-            Text(config.tagline)
+            Text(config.tagline.isEmpty ? "Secure identity powered by Ping Identity" : config.tagline)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(config.secondaryColor)
         }
         .padding()
     }

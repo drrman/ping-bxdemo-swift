@@ -32,6 +32,12 @@ class StepUpViewModel: ObservableObject {
         }
         self.daVinci = dv
 
+        // Clear any existing server-side session before starting step-up
+        let signoffURL = URL(string: "https://auth.pingone.com/\(pingConfig.environmentId)/as/signoff")!
+        var signoffRequest = URLRequest(url: signoffURL)
+        signoffRequest.httpMethod = "GET"
+        _ = try? await URLSession.shared.data(for: signoffRequest)
+
         isLoading = true
         errorMessage = nil
         let node = await dv.start()

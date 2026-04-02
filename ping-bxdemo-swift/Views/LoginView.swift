@@ -189,12 +189,14 @@ class LoginViewModel: ObservableObject {
 
         case let errorNode as ErrorNode:
             print("[LoginVM] ErrorNode — message: \(errorNode.message)")
+            await MainActor.run {
+                self.errorMessage = errorNode.message
+            }
             if let continueNode = errorNode.continueNode {
-                print("[LoginVM] ErrorNode has continueNode — advancing flow instead of showing error")
+                print("[LoginVM] ErrorNode has continueNode — showing form with error")
                 await handleNode(continueNode)
             } else {
                 await MainActor.run {
-                    self.errorMessage = errorNode.message
                     self.isLoading = false
                 }
             }

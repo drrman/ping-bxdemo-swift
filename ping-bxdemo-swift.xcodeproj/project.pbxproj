@@ -28,6 +28,8 @@
 		A10000010000000000000030 /* ManualFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030 /* ManualFormView.swift */; };
 		A10000010000000000000031 /* ProfileManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031 /* ProfileManagementView.swift */; };
 		A10000010000000000000032 /* OIDCAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032 /* OIDCAuthService.swift */; };
+		A10000010000000000000033 /* WebSSOHandoffService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* WebSSOHandoffService.swift */; };
+		A10000010000000000000034 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* SafariView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +52,8 @@
 		A20000010000000000000030 /* ManualFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualFormView.swift; sourceTree = "<group>"; };
 		A20000010000000000000031 /* ProfileManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileManagementView.swift; sourceTree = "<group>"; };
 		A20000010000000000000032 /* OIDCAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OIDCAuthService.swift; sourceTree = "<group>"; };
+		A20000010000000000000033 /* WebSSOHandoffService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSSOHandoffService.swift; sourceTree = "<group>"; };
+		A20000010000000000000034 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +130,7 @@
 				A2000001000000000000000B /* PingButton.swift */,
 				A2000001000000000000000C /* PingTextField.swift */,
 				A20000010000000000000030 /* ManualFormView.swift */,
+				A20000010000000000000034 /* SafariView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -135,6 +140,7 @@
 			children = (
 				A2000001000000000000000D /* AuthService.swift */,
 				A20000010000000000000032 /* OIDCAuthService.swift */,
+				A20000010000000000000033 /* WebSSOHandoffService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -257,6 +263,8 @@
 				A10000010000000000000030 /* ManualFormView.swift in Sources */,
 				A10000010000000000000031 /* ProfileManagementView.swift in Sources */,
 				A10000010000000000000032 /* OIDCAuthService.swift in Sources */,
+				A10000010000000000000033 /* WebSSOHandoffService.swift in Sources */,
+				A10000010000000000000034 /* SafariView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

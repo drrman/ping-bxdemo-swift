@@ -4,6 +4,9 @@ struct HomeView: View {
     private let config = CustomerConfig.current
     @State private var selectedTab = 0
     @State private var selectedStepUpTile: ContentTile? = nil
+    @State private var webSSOURL: IdentifiableURL? = nil
+    @State private var isStartingWebSSO = false
+    @State private var webSSOError: String? = nil
 
     private var currentUserId: String {
         guard let claims = AuthService.shared.getUserFromToken() else { return "" }
@@ -91,6 +94,10 @@ struct HomeView: View {
                             }
                         }
                     }
+
+                    WebSSOTileCard {
+                        startWebSSOHandoff()
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
@@ -116,6 +123,91 @@ struct HomeView: View {
                 userId: currentUserId
             )
         }
+        .sheet(item: $webSSOURL) { item in
+            SafariView(url: item.url)
+                .ignoresSafeArea()
+        }
+        .overlay {
+            if isStartingWebSSO {
+                ZStack {
+                    Color.black.opacity(0.25).ignoresSafeArea()
+                    ProgressView("Opening Web Account…")
+                        .padding(20)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(12)
+                }
+            }
+        }
+        .alert("Web SSO Failed", isPresented: Binding(
+            get: { webSSOError != nil },
+            set: { if !$0 { webSSOError = nil } }
+        )) {
+            Button("OK", role: .cancel) { webSSOError = nil }
+        } message: {
+            Text(webSSOError ?? "")
+        }
+    }
+
+    private func startWebSSOHandoff() {
+        guard !isStartingWebSSO else { return }
+        isStartingWebSSO = true
+        Task {
+            do {
+                let url = try await WebSSOHandoffService().startHandoff()
+                await MainActor.run {
+                    isStartingWebSSO = false
+                    webSSOURL = IdentifiableURL(url: url)
+                }
+            } catch {
+                await MainActor.run {
+                    isStartingWebSSO = false
+                    webSSOError = error.localizedDescription
+                }
+            }
+        }
+    }
+}
+
+struct IdentifiableURL: Identifiable {
+    let url: URL
+    var id: String { url.absoluteString }
+}
+
+private struct WebSSOTileCard: View {
+    let onTap: () -> Void
+    private let config = CustomerConfig.current
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 16) {
+                Image(systemName: "globe")
+                    .font(.title2)
+                    .foregroundColor(config.secondaryColor)
+                    .frame(width: 44, height: 44)
+                    .background(config.primaryColor.opacity(0.1))
+                    .cornerRadius(10)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Web Account")
+                        .font(.headline)
+                        .foregroundColor(config.primaryColor)
+                    Text("Open your account on the web — already signed in")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(Color(.secondarySystemBackground))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -19,11 +19,11 @@ struct PingConfigValues {
 
 struct PingConfig {
     static var current = PingConfigValues(
-        environmentId: "b8c6454a-d2cc-48ff-8b61-5349e721baf8",
-        clientId: "2a1f819f-9713-46ef-9059-f8db884af7c3",
-        loginPolicyId: "c6c8c86c447dce98177c2265512b651e",
-        registrationPolicyId: "2ba8ebfbf250eb33f272424bdd124775",
-        stepUpPolicyId: "8ca6b5b9b8aeb7bcbd0e1f9d807e0e91",
+        environmentId: "e08cdcdf-2389-418f-9064-aaa9ee4c5150",
+        clientId: "78427c21-993e-4852-a05b-72e0139a41a2",
+        loginPolicyId: "56f1907ce63e06dc0e9493ff1b72ba8e",
+        registrationPolicyId: "01292a062d3e2960d2953f92849c6c17",
+        stepUpPolicyId: "9c312501435e0e4875de485b50d0ff58",
         oidcPolicyId: "c6c8c86c447dce98177c2265512b651e",
         redirectUri: "bxdemo://callback",
         scopes: ["openid", "profile", "email"]
